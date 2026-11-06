@@ -34,4 +34,4 @@ Live page: https://harshadodderi.github.io/NOEDRhost/
 
 ## License
 
-Add your license here.
+NO license
