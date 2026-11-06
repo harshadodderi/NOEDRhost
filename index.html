@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forensic Command Reference</title>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --panel: #151821;
+    --panel-2: #1c2030;
+    --border: #262b3b;
+    --text: #e7e9f2;
+    --muted: #8c93a8;
+    --accent: #8b9cff;
+    --ok: #5fd9b4;
+    --warn: #f2b25c;
+    --danger: #ff7f8a;
+    --code: #0a0c11;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,15,20,0.94); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border); padding: 16px 24px;
+  }
+  h1 { font-size: 18px; margin: 0 0 12px; font-weight: 600; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill {
+    border: 1px solid var(--border); background: var(--panel); color: var(--muted);
+    padding: 6px 16px; border-radius: 999px; cursor: pointer; font-size: 13px; font-family: inherit;
+  }
+  .pill.active { color: var(--text); border-color: var(--accent); background: var(--panel-2); }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  input[type="search"], input[type="text"] {
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 8px 12px; border-radius: 8px; font-size: 13px; font-family: inherit;
+  }
+  input[type="search"] { flex: 1; min-width: 200px; }
+  input[type="text"] { min-width: 240px; font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    background: var(--panel); color: var(--muted); border: none; padding: 8px 12px;
+    cursor: pointer; font-size: 13px; font-family: inherit;
+  }
+  .seg button.active { background: var(--panel-2); color: var(--text); }
+  .seg button[hidden] { display: none; }
+  .check { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; cursor: pointer; }
+  .btn {
+    background: var(--accent); color: #0d0f14; border: none; padding: 8px 14px;
+    border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit;
+  }
+  .btn.ghost { background: var(--panel); color: var(--text); border: 1px solid var(--border); font-weight: 500; }
+  main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+  .notice {
+    border: 1px solid #4a3a1f; background: rgba(242,178,92,0.06); color: #f3d6a4;
+    padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin: 28px 0 10px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .card.hidden, .hidden { display: none !important; }
+  .card-head { display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap; align-items: flex-start; }
+  .card-title { font-weight: 600; font-size: 14px; }
+  .desc { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--border); color: var(--muted);
+  }
+  .tag.ro { color: var(--ok); border-color: #1f4a40; }
+  .tag.sh { color: var(--accent); border-color: #2d3a6b; }
+  .tag.ps { color: var(--accent); border-color: #2d3a6b; }
+  .tag.cmd { color: #c9b6ff; border-color: #3d2f66; }
+  .tag.heavy { color: var(--warn); border-color: #4a3a1f; }
+  .tag.admin { color: var(--danger); border-color: #4a2a30; }
+  .tag.write { color: var(--warn); border-color: #4a3a1f; }
+  pre {
+    background: var(--code); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; margin: 0; overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; color: #cdd5e8;
+  }
+  .row-actions { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+  .copy {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 12px; font-size: 12px; cursor: pointer; font-family: inherit;
+  }
+  .empty {
+    border: 1px dashed var(--border); border-radius: 10px; padding: 32px;
+    text-align: center; color: var(--muted);
+  }
+  footer { color: var(--muted); font-size: 12px; text-align: center; padding: 32px 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Forensic Command Reference</h1>
+  <div class="pills">
+    <button class="pill active" data-os="windows">Windows</button>
+    <button class="pill" data-os="linux">Linux</button>
+    <button class="pill" data-os="mac">macOS</button>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="search" placeholder="Search commands, descriptions, output files">
+    <div class="seg" id="shellSeg">
+      <button class="active" data-shell="all">All</button>
+      <button data-shell="cmd" data-only="windows">CMD</button>
+      <button data-shell="powershell" data-only="windows">PowerShell</button>
+      <button data-shell="sh" data-only="unix">Shell</button>
+    </div>
+    <label class="check"><input type="checkbox" id="hideHeavy"> Hide heavy scans</label>
+    <input type="text" id="outDir" aria-label="Output folder" title="Folder where each command writes its evidence">
+    <button class="btn ghost" id="selectVisible">Select visible</button>
+    <button class="btn" id="exportBtn">Export selected (.txt)</button>
+  </div>
+</header>
+
+<main>
+  <div class="notice">
+    Commands are not run by this page. Copy them and run them yourself on the host or a lab copy. Most commands need an elevated prompt (Windows) or root (Linux and macOS). Set the output folder to external media where possible, so you do not write to the system under review.
+  </div>
+  <div id="content"></div>
+</main>
+
+<footer>Static reference page. Nothing is sent or stored outside this browser.</footer>
+
+<script>
+const I = (s, t, d, c, f = "") => ({ s, t, d, c, h: f.includes("h"), a: f.includes("a"), w: f.includes("w") });
+
+const OS = {
+  windows: { label: "Windows", out: "C:\\", sections: [
+    { name: "1. System and processes", items: [
+      I("cmd", "System information", "Exports OS version, hotfixes, boot time and host configuration.", String.raw`systeminfo > @OUT@01_System_Info.txt`),
+      I("cmd", "Running tasks (verbose CSV)", "Lists running processes with user context and window titles.", String.raw`tasklist /v /fo csv > @OUT@02_Running_Processes.csv`),
+      I("powershell", "Process tree with paths", "Captures PIDs, parent PIDs, executable paths and full command lines.", String.raw`Get-CimInstance Win32_Process | Select ProcessId,ParentProcessId,Name,ExecutablePath,CommandLine | Export-Csv @OUT@03_Process_Details.csv -NoTypeInformation`)
+    ]},
+    { name: "2. Services and drivers", items: [
+      I("powershell", "Windows services", "Exports service name, state, start mode and binary path.", String.raw`Get-CimInstance Win32_Service | Select Name,DisplayName,State,StartMode,PathName | Export-Csv @OUT@04_Services.csv -NoTypeInformation`),
+      I("powershell", "System drivers", "Exports kernel and system driver entries with file paths.", String.raw`Get-CimInstance Win32_SystemDriver | Select Name,DisplayName,State,StartMode,PathName | Export-Csv @OUT@05_Drivers.csv -NoTypeInformation`),
+      I("cmd", "Driver inventory (verbose)", "Full driver list with module, link date and signing details.", String.raw`driverquery /v /fo csv > @OUT@06_Driver_Inventory.csv`)
+    ]},
+    { name: "3. Registry persistence and restrictions", items: [
+      I("cmd", "HKCU System policy keys", "Dumps per-user System policy, which can show UAC or tool restriction tampering.", String.raw`reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System" /s > @OUT@07_Registry_Restrictions.txt`),
+      I("cmd", "HKLM Run keys", "Lists machine-wide autostart entries that run at boot or logon.", String.raw`reg query "HKLM\Software\Microsoft\Windows\CurrentVersion\Run" /s > @OUT@08_HKLM_Run.txt`),
+      I("cmd", "HKCU Run keys", "Lists per-user autostart entries for the current account.", String.raw`reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /s > @OUT@09_HKCU_Run.txt`),
+      I("cmd", "Service registry configuration", "Dumps service keys including ImagePath and Start values.", String.raw`reg query "HKLM\SYSTEM\CurrentControlSet\Services" /s > @OUT@10_Registry_Services.txt`)
+    ]},
+    { name: "4. Startup and scheduled tasks", items: [
+      I("cmd", "Scheduled tasks (verbose)", "Exports each task with its action, trigger, run-as user and last run time.", String.raw`schtasks /query /fo CSV /v > @OUT@11_Scheduled_Tasks.csv`),
+      I("powershell", "Startup programs", "Lists startup commands from WMI across registry and startup folders.", String.raw`Get-CimInstance Win32_StartupCommand | Select Name,Command,Location,User | Export-Csv @OUT@12_Startup_Programs.csv -NoTypeInformation`)
+    ]},
+    { name: "5. Sality file indicators", items: [
+      I("cmd", "autorun.inf search", "Finds autorun.inf files, including hidden and system ones, across C:\\.", String.raw`dir C:\autorun.inf /a /s > @OUT@13_Autorun_Files.txt`, "h"),
+      I("cmd", "PIF file search", "Finds .pif shortcut files, a common Sality dropper artifact.", String.raw`dir C:\*.pif /a /s > @OUT@14_PIF_Files.txt`, "h"),
+      I("cmd", "amsint32.sys lookup", "Checks for the amsint32.sys driver file across C:\\.", String.raw`dir C:\amsint32.sys /a /s > @OUT@15_Suspicious_Driver.txt`, "h"),
+      I("cmd", "File attributes (hidden and system)", "Lists every file with hidden, system and read-only flags.", String.raw`attrib C:\*.* /s /d > @OUT@16_File_Attributes.txt`, "h")
+    ]},
+    { name: "6. Executable file inventory", items: [
+      I("powershell", "EXE inventory", "Recursive list of every .exe with size and creation and write times.", String.raw`Get-ChildItem C:\ -Filter *.exe -File -Recurse -ErrorAction SilentlyContinue | Select FullName,Length,CreationTime,LastWriteTime | Export-Csv @OUT@17_EXE_Inventory.csv -NoTypeInformation`, "h"),
+      I("powershell", "EXE Authenticode signatures", "Checks the digital signature status of every .exe on C:\\.", String.raw`Get-ChildItem C:\ -Filter *.exe -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Get-AuthenticodeSignature $_.FullName | Select Path,Status,StatusMessage } | Export-Csv @OUT@18_EXE_Signatures.csv -NoTypeInformation`, "h")
+    ]},
+    { name: "7. Network IOC investigation", items: [
+      I("powershell", "Check supplied IP address", "Lists active TCP connections to the SaltySpider IOC IP.", String.raw`Get-NetTCPConnection | Where-Object {$_.RemoteAddress -eq "188.166.101.148"} | Export-Csv @OUT@19_SaltySpider_IP_Check.csv -NoTypeInformation`),
+      I("cmd", "TCP connections with PIDs", "Lists TCP connections with local, remote, state and owning PID.", String.raw`netstat -ano -p tcp > @OUT@20_TCP_Connections.txt`),
+      I("cmd", "UDP endpoints with PIDs", "Lists UDP listeners and owning PIDs. Remote UDP peers are not shown.", String.raw`netstat -ano -p udp > @OUT@21_UDP_Connections.txt`),
+      I("powershell", "DNS client cache", "Exports recently resolved names and records from the local resolver.", String.raw`Get-DnsClientCache | Export-Csv @OUT@22_DNS_Cache.csv -NoTypeInformation`),
+      I("powershell", "Firewall profile configuration", "Dumps each firewall profile including default inbound and outbound actions.", String.raw`Get-NetFirewallProfile | Format-List * | Out-File @OUT@23_Firewall_Status.txt`)
+    ]},
+    { name: "8. Windows Defender investigation", items: [
+      I("powershell", "Defender status", "Dumps real-time protection, signature version and scan state.", String.raw`Get-MpComputerStatus | Format-List * | Out-File @OUT@24_Defender_Status.txt`),
+      I("powershell", "Defender threat detections", "Lists recorded detections and the remediation actions taken.", String.raw`Get-MpThreatDetection | Format-List * | Out-File @OUT@25_Defender_Detections.txt`),
+      I("powershell", "Defender preferences", "Dumps exclusions and config. Exclusions are a common attacker tactic.", String.raw`Get-MpPreference | Format-List * | Out-File @OUT@26_Defender_Preferences.txt`, "a")
+    ]},
+    { name: "9. Event log collection", items: [
+      I("cmd", "Defender operational log", "Exports the Defender operational event log as EVTX.", String.raw`wevtutil epl "Microsoft-Windows-Windows Defender/Operational" @OUT@27_Defender_Events.evtx`, "a"),
+      I("cmd", "System event log", "Exports the System event log as EVTX.", String.raw`wevtutil epl System @OUT@28_System_Events.evtx`, "a"),
+      I("cmd", "Security event log", "Exports the Security event log as EVTX, including logons and privilege use.", String.raw`wevtutil epl Security @OUT@29_Security_Events.evtx`, "a")
+    ]},
+    { name: "10. SHA256 hash collection", items: [
+      I("powershell", "autorun.inf hashes", "Computes SHA256 for every autorun.inf on C:\\, including hidden files.", String.raw`Get-ChildItem C:\ -Filter autorun.inf -File -Force -Recurse -ErrorAction SilentlyContinue | Get-FileHash -Algorithm SHA256 | Export-Csv @OUT@30_Autorun_Hashes.csv -NoTypeInformation`, "h"),
+      I("powershell", "amsint32.sys hashes", "Computes SHA256 for every amsint32.sys on C:\\.", String.raw`Get-ChildItem C:\ -Filter amsint32.sys -File -Force -Recurse -ErrorAction SilentlyContinue | Get-FileHash -Algorithm SHA256 | Export-Csv @OUT@31_Driver_Hashes.csv -NoTypeInformation`, "h")
+    ]},
+    { name: "11. Accounts and sessions", items: [
+      I("cmd", "Local user accounts", "Lists local accounts with status and last logon details.", String.raw`net user > @OUT@32_Local_Users.txt`),
+      I("powershell", "Local Administrators group", "Lists members of the local Administrators group.", String.raw`Get-LocalGroupMember -Group Administrators | Export-Csv @OUT@33_Local_Admins.csv -NoTypeInformation`),
+      I("cmd", "Logged-on sessions", "Shows interactive and remote sessions currently on the host.", String.raw`query user > @OUT@34_Logged_On_Sessions.txt`),
+      I("cmd", "SMB shares", "Lists shared folders and their paths.", String.raw`net share > @OUT@35_SMB_Shares.txt`),
+      I("powershell", "Active SMB sessions", "Lists remote clients connected to shares on this host.", String.raw`Get-SmbSession | Export-Csv @OUT@36_SMB_Sessions.csv -NoTypeInformation`)
+    ]},
+    { name: "12. Persistence extras", items: [
+      I("powershell", "WMI event consumers", "Lists WMI consumers, a fileless persistence mechanism.", String.raw`Get-CimInstance -Namespace root/subscription -ClassName __EventConsumer | Export-Csv @OUT@37_WMI_Consumers.csv -NoTypeInformation`, "a"),
+      I("cmd", "PowerShell console history", "Copies the current user's PSReadLine command history.", String.raw`type "%APPDATA%\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt" > @OUT@38_PS_History.txt`)
+    ]},
+    { name: "13. Resolver and ARP caches", items: [
+      I("cmd", "DNS resolver cache (display)", "Dumps the DNS cache as shown by ipconfig.", String.raw`ipconfig /displaydns > @OUT@39_Displaydns.txt`),
+      I("cmd", "ARP cache", "Lists IP to MAC mappings seen by this host.", String.raw`arp -a > @OUT@40_ARP_Cache.txt`)
+    ]}
+  ]},
+
+  linux: { label: "Linux", out: "/tmp/evidence/", sections: [
+    { name: "0. Setup", items: [
+      I("sh", "Create evidence folder", "Creates the output folder if it does not exist.", String.raw`mkdir -p @OUT@`, "w")
+    ]},
+    { name: "1. System and processes", items: [
+      I("sh", "System identity", "Captures hostname, kernel, OS release and uptime.", String.raw`{ date -u; hostnamectl; uname -a; cat /etc/os-release; uptime; } > @OUT@01_system_info.txt`),
+      I("sh", "Process list with arguments", "Lists all processes with users and full command lines.", String.raw`ps auxww > @OUT@02_processes.txt`),
+      I("sh", "Process executable links", "Shows the binary behind each PID, including deleted files.", String.raw`ls -l /proc/[0-9]*/exe 2>/dev/null > @OUT@03_process_exe_links.txt`, "a"),
+      I("sh", "TCP and UDP sockets with PIDs", "Lists sockets with state and owning process.", String.raw`ss -tunap > @OUT@04_sockets.txt`, "a"),
+      I("sh", "Open network files", "Lists files and sockets held open by processes.", String.raw`lsof -nP -i > @OUT@05_open_network_files.txt`, "a")
+    ]},
+    { name: "2. Users and logins", items: [
+      I("sh", "Account and group files", "Copies passwd and group databases.", String.raw`cat /etc/passwd /etc/group > @OUT@06_passwd_group.txt`),
+      I("sh", "UID 0 accounts", "Lists every account with root-level UID 0.", String.raw`awk -F: '$3==0 {print}' /etc/passwd > @OUT@07_uid0_accounts.txt`),
+      I("sh", "Current sessions", "Lists logged-in users and their source hosts.", String.raw`who -a > @OUT@08_who.txt`),
+      I("sh", "Login history", "Lists past logins with source IP and full timestamps.", String.raw`last -Faiwx > @OUT@09_last_logins.txt`, "a"),
+      I("sh", "Failed login attempts", "Lists failed authentication attempts from btmp.", String.raw`lastb -Faiwx > @OUT@10_failed_logins.txt`, "a")
+    ]},
+    { name: "3. Logs", items: [
+      I("sh", "Journal, last 7 days", "Exports systemd journal entries from the past week.", String.raw`journalctl --no-pager --since "7 days ago" > @OUT@11_journal_7d.txt`, "a"),
+      I("sh", "Archive of /var/log", "Packages the log directory. Can be large.", String.raw`tar czf @OUT@12_var_log.tgz /var/log 2>/dev/null`, "ah")
+    ]},
+    { name: "4. Persistence", items: [
+      I("sh", "User crontabs", "Dumps crontab for every local account.", String.raw`for u in $(cut -d: -f1 /etc/passwd); do echo "== $u"; crontab -l -u "$u" 2>/dev/null; done > @OUT@13_user_crontabs.txt`, "a"),
+      I("sh", "System cron directories", "Lists system-wide cron jobs and their timestamps.", String.raw`ls -la /etc/cron* > @OUT@14_system_cron.txt 2>/dev/null`),
+      I("sh", "systemd service unit files", "Lists installed services and their enabled state.", String.raw`systemctl list-unit-files --type=service --no-pager > @OUT@15_systemd_services.txt`),
+      I("sh", "systemd timers", "Lists all timers and their next and last run.", String.raw`systemctl list-timers --all --no-pager > @OUT@16_systemd_timers.txt`),
+      I("sh", "Recently changed unit files", "Finds service files modified in the last 30 days.", String.raw`find /etc/systemd /usr/lib/systemd -name "*.service" -mtime -30 2>/dev/null > @OUT@17_recent_unit_files.txt`),
+      I("sh", "authorized_keys locations", "Finds every SSH authorized_keys file on local filesystems.", String.raw`find / -xdev -name authorized_keys 2>/dev/null > @OUT@18_authorized_keys_paths.txt`, "ah")
+    ]},
+    { name: "5. Files and binaries", items: [
+      I("sh", "SUID and SGID binaries", "Lists binaries that run with owner privileges.", String.raw`find / -xdev -perm -4000 -type f 2>/dev/null > @OUT@19_suid_binaries.txt`, "ah"),
+      I("sh", "Files modified in 7 days", "Lists regular files changed in the past week.", String.raw`find / -xdev -type f -mtime -7 2>/dev/null > @OUT@20_files_modified_7d.txt`, "h"),
+      I("sh", "Executables in temp paths", "Lists executable files in /tmp, /var/tmp and /dev/shm.", String.raw`find /tmp /var/tmp /dev/shm -type f -perm -u+x 2>/dev/null > @OUT@21_tmp_executables.txt`),
+      I("sh", "SHA256 of system binaries", "Hashes binaries in system bin paths and /tmp.", String.raw`find /usr/bin /usr/sbin /usr/local/bin /tmp -type f -exec sha256sum {} + 2>/dev/null > @OUT@22_sha256_bins.txt`, "h"),
+      I("sh", "Package integrity (Debian/Ubuntu)", "Verifies installed package files against their checksums. Use rpm -Va on RHEL.", String.raw`dpkg -V > @OUT@23_package_verify.txt 2>/dev/null`, "a")
+    ]},
+    { name: "6. Network and kernel", items: [
+      I("sh", "Interfaces, routes and neighbors", "Captures addresses, routes, ARP/neighbor table and resolver config.", String.raw`{ ip -br addr; ip route; ip neigh; cat /etc/resolv.conf /etc/hosts; } > @OUT@24_network_config.txt`),
+      I("sh", "Firewall rules", "Exports iptables and nftables rulesets.", String.raw`iptables -S > @OUT@25_iptables.txt 2>/dev/null; nft list ruleset > @OUT@26_nftables.txt 2>/dev/null`, "a"),
+      I("sh", "Loaded kernel modules", "Lists kernel modules currently loaded.", String.raw`lsmod > @OUT@27_kernel_modules.txt`),
+      I("sh", "Check supplied IP address", "Lists current socket connections to the SaltySpider IOC IP.", String.raw`ss -tunap | grep 188.166.101.148 > @OUT@28_IOC_IP_check.txt`, "a"),
+      I("sh", "Kernel ring buffer", "Exports kernel messages with readable timestamps.", String.raw`dmesg -T > @OUT@29_kernel_log.txt`, "a")
+    ]},
+    { name: "7. User activity and mounts", items: [
+      I("sh", "Shell history", "Copies bash and zsh history for all local users.", String.raw`cat /home/*/.bash_history /home/*/.zsh_history /root/.bash_history 2>/dev/null > @OUT@30_shell_history.txt`, "a"),
+      I("sh", "Mounts and disk usage", "Lists mounted filesystems and free space.", String.raw`{ mount; df -h; } > @OUT@31_mounts.txt`)
+    ]}
+  ]},
+
+  mac: { label: "macOS", out: "/tmp/evidence/", sections: [
+    { name: "0. Setup", items: [
+      I("sh", "Create evidence folder", "Creates the output folder if it does not exist.", String.raw`mkdir -p @OUT@`, "w")
+    ]},
+    { name: "1. System and processes", items: [
+      I("sh", "System identity", "Captures OS version, kernel and hardware summary.", String.raw`{ date -u; sw_vers; uname -a; system_profiler SPSoftwareDataType SPHardwareDataType; } > @OUT@01_system_info.txt`),
+      I("sh", "Process list with arguments", "Lists all processes with users and full command lines.", String.raw`ps auxww > @OUT@02_processes.txt`),
+      I("sh", "Open network files", "Lists files and sockets held open by processes.", String.raw`lsof -nP -i > @OUT@03_network_files.txt`, "a"),
+      I("sh", "Network connections (verbose)", "Lists sockets with state and buffer details.", String.raw`netstat -anv > @OUT@04_netstat.txt`),
+      I("sh", "launchd services", "Lists loaded launchd jobs with PIDs and exit status.", String.raw`launchctl list > @OUT@05_launchctl_list.txt`)
+    ]},
+    { name: "2. Persistence", items: [
+      I("sh", "Launch agent and daemon folders", "Lists plist files in the standard launchd locations.", String.raw`ls -la /Library/LaunchAgents /Library/LaunchDaemons ~/Library/LaunchAgents > @OUT@06_launch_plists.txt 2>/dev/null`),
+      I("sh", "Launch plist contents", "Dumps the contents of each launch plist for review.", String.raw`for f in /Library/LaunchAgents/*.plist /Library/LaunchDaemons/*.plist ~/Library/LaunchAgents/*.plist; do echo "== $f"; plutil -p "$f"; done > @OUT@07_launch_plist_contents.txt 2>/dev/null`),
+      I("sh", "Background items (macOS 13+)", "Dumps login and background items managed by the system.", String.raw`sfltool dumpbtm > @OUT@08_background_items.txt`, "a"),
+      I("sh", "Disabled launch services", "Lists launchd services disabled at the system level.", String.raw`launchctl print-disabled system > @OUT@09_disabled_services.txt`, "a"),
+      I("sh", "User crontab", "Copies the current user's crontab and the cron tab directory.", String.raw`crontab -l > @OUT@10_user_crontab.txt 2>/dev/null; ls -la /usr/lib/cron/tabs >> @OUT@10_user_crontab.txt 2>/dev/null`)
+    ]},
+    { name: "3. Accounts and logins", items: [
+      I("sh", "Local user accounts", "Lists accounts and their UIDs from Directory Services.", String.raw`dscl . -list /Users UniqueID > @OUT@11_users.txt`),
+      I("sh", "Admin group members", "Lists members of the admin group.", String.raw`dscl . -read /Groups/admin GroupMembership > @OUT@12_admin_group.txt`),
+      I("sh", "Current sessions", "Lists logged-in users and terminals.", String.raw`who -a > @OUT@13_who.txt`),
+      I("sh", "Login history", "Lists past logins and reboots.", String.raw`last > @OUT@14_last_logins.txt`)
+    ]},
+    { name: "4. Unified logs", items: [
+      I("sh", "Unified log, last 7 days", "Exports system logging for the past week. Can be very large.", String.raw`log show --last 7d --style syslog > @OUT@15_unified_log_7d.txt`, "ah"),
+      I("sh", "sudo activity, last 7 days", "Filters the unified log for sudo events.", String.raw`log show --last 7d --style syslog --predicate 'process == "sudo"' > @OUT@16_sudo_events.txt`, "a")
+    ]},
+    { name: "5. Security and provenance", items: [
+      I("sh", "Gatekeeper and SIP status", "Reports whether Gatekeeper and System Integrity Protection are enabled.", String.raw`{ spctl --status; csrutil status; } > @OUT@17_gatekeeper_sip.txt`),
+      I("sh", "Application code signatures", "Checks the code signature of every app in /Applications.", String.raw`for app in /Applications/*.app; do echo "== $app"; codesign -dv --verbose=2 "$app" 2>&1; done > @OUT@18_app_signatures.txt`, "h"),
+      I("sh", "Quarantine database copy", "Copies the download quarantine DB so the live file is untouched. Query the copy next.", String.raw`cp ~/Library/Preferences/com.apple.LaunchServices.QuarantineEventsV2 @OUT@19_quarantine_copy.db`),
+      I("sh", "Query the quarantine copy", "Lists downloaded files with origin URLs and timestamps.", String.raw`sqlite3 @OUT@19_quarantine_copy.db "select LSQuarantineDataURLString, LSQuarantineOriginURLString, datetime(LSQuarantineTimeStamp + 978307200, 'unixepoch') from LSQuarantineEvent" > @OUT@19b_quarantine_events.txt`),
+      I("sh", "TCC privacy permissions", "Reads granted app permissions such as camera and Full Disk Access. Needs Full Disk Access for the terminal.", String.raw`sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "select service,client,auth_value,last_modified from access" > @OUT@20_tcc_permissions.txt`, "a")
+    ]},
+    { name: "6. Files, network and users", items: [
+      I("sh", "SHA256 of apps, bins and daemons", "Hashes files in Applications, /usr/local/bin and LaunchDaemons.", String.raw`find /Applications /usr/local/bin /Library/LaunchDaemons -type f -exec shasum -a 256 {} + > @OUT@21_hashes.txt 2>/dev/null`, "h"),
+      I("sh", "Executables in temp paths", "Lists executable files in /tmp and shared folders.", String.raw`find /private/tmp /Users/Shared -type f -perm +111 2>/dev/null > @OUT@22_exec_in_tmp.txt`),
+      I("sh", "Interfaces and DNS config", "Captures interface addresses and resolver configuration.", String.raw`{ ifconfig; scutil --dns; } > @OUT@23_interfaces_dns.txt`),
+      I("sh", "ARP cache", "Lists IP to MAC mappings seen by this host.", String.raw`arp -a > @OUT@24_arp.txt`),
+      I("sh", "SSH keys and config", "Copies the SSH directory listing and authorized keys.", String.raw`{ ls -la ~/.ssh; cat ~/.ssh/authorized_keys; } > @OUT@25_ssh_keys.txt 2>/dev/null`),
+      I("sh", "Shell history", "Copies zsh and bash history for the current user.", String.raw`cat ~/.zsh_history ~/.bash_history > @OUT@26_shell_history.txt 2>/dev/null`),
+      I("sh", "Check supplied IP address", "Lists open sockets to the SaltySpider IOC IP.", String.raw`lsof -nP -i | grep 188.166.101.148 > @OUT@27_IOC_IP_check.txt`, "a"),
+      I("sh", "Installed packages", "Lists installer packages registered with pkgutil.", String.raw`pkgutil --pkgs > @OUT@28_installed_packages.txt`),
+      I("sh", "Disks and free space", "Lists disks, partitions and usage.", String.raw`{ diskutil list; df -h; } > @OUT@29_disks.txt`)
+    ]}
+  ]}
+};
+
+const ITEMS = {};
+let curOS = "windows", curShell = "all", currentOut = OS.windows.out;
+const selected = new Set();
+
+(function index() {
+  Object.keys(OS).forEach(os => {
+    let n = 1;
+    OS[os].sections.forEach(sec => sec.items.forEach(it => {
+      it.id = os + "-" + (n++);
+      it.sec = sec.name;
+      ITEMS[it.id] = it;
+    }));
+  });
+})();
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function cmdFor(it) { return it.c.split("@OUT@").join(currentOut); }
+function shellLabel(s) { return s === "cmd" ? "CMD" : s === "powershell" ? "PowerShell" : "Shell"; }
+function shellClass(s) { return s === "cmd" ? "cmd" : s === "powershell" ? "ps" : "sh"; }
+
+function render() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  const hideHeavy = document.getElementById("hideHeavy").checked;
+  const root = document.getElementById("content");
+  const cfg = OS[curOS];
+  let html = "", shown = 0;
+
+  cfg.sections.forEach(sec => {
+    const cards = sec.items.map(it => {
+      const shellOK = curShell === "all" || it.s === curShell;
+      const heavyOK = !(hideHeavy && it.h);
+      const cmd = cmdFor(it);
+      const hay = (sec.name + " " + it.t + " " + it.d + " " + cmd).toLowerCase();
+      const visible = shellOK && heavyOK && (!q || hay.includes(q));
+      if (visible) shown++;
+      const tags = [
+        `<span class="tag ${shellClass(it.s)}">${shellLabel(it.s)}</span>`,
+        it.w ? `<span class="tag write">Creates folder</span>` : `<span class="tag ro">Read-only query</span>`,
+        it.h ? `<span class="tag heavy">Heavy scan</span>` : "",
+        it.a ? `<span class="tag admin">Admin or root</span>` : ""
+      ].join("");
+      return `
+        <div class="card ${visible ? "" : "hidden"}" data-id="${it.id}">
+          <div class="card-head">
+            <div class="card-title">${esc(it.t)}</div>
+            <div class="tags">${tags}</div>
+          </div>
+          <div class="desc">${esc(it.d)}</div>
+          <pre>${esc(cmd)}</pre>
+          <div class="row-actions">
+            <button class="copy" data-copy="${it.id}">Copy</button>
+            <label class="check"><input type="checkbox" class="sel" data-id="${it.id}" ${selected.has(it.id) ? "checked" : ""}> Include in export</label>
+          </div>
+        </div>`;
+    }).join("");
+    html += `<div class="section-title">${esc(sec.name)}</div>${cards}`;
+  });
+
+  root.innerHTML = html || `<div class="empty">No commands match this filter.</div>`;
+  bind();
+}
+
+function bind() {
+  document.querySelectorAll(".copy").forEach(btn => {
+    btn.onclick = () => {
+      navigator.clipboard.writeText(cmdFor(ITEMS[btn.dataset.copy])).then(() => {
+        btn.textContent = "Copied";
+        setTimeout(() => btn.textContent = "Copy", 1200);
+      });
+    };
+  });
+  document.querySelectorAll(".sel").forEach(cb => {
+    cb.onchange = () => cb.checked ? selected.add(cb.dataset.id) : selected.delete(cb.dataset.id);
+  });
+}
+
+function setOS(os) {
+  curOS = os;
+  currentOut = OS[os].out;
+  document.getElementById("outDir").value = currentOut;
+  document.querySelectorAll(".pill").forEach(p => p.classList.toggle("active", p.dataset.os === os));
+  document.querySelectorAll("#shellSeg button").forEach(b => {
+    const only = b.dataset.only;
+    const show = b.dataset.shell === "all" || !only || (only === "windows" ? os === "windows" : os !== "windows");
+    b.hidden = !show;
+  });
+  curShell = "all";
+  document.querySelectorAll("#shellSeg button").forEach(b => b.classList.toggle("active", b.dataset.shell === "all"));
+  render();
+}
+
+document.querySelectorAll(".pill").forEach(p => p.onclick = () => setOS(p.dataset.os));
+
+document.querySelectorAll("#shellSeg button").forEach(b => {
+  b.onclick = () => {
+    curShell = b.dataset.shell;
+    document.querySelectorAll("#shellSeg button").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  };
+});
+
+document.getElementById("search").addEventListener("input", render);
+document.getElementById("hideHeavy").addEventListener("change", render);
+document.getElementById("outDir").addEventListener("input", e => {
+  currentOut = e.target.value.trim() || OS[curOS].out;
+  render();
+});
+
+document.getElementById("selectVisible").onclick = () => {
+  document.querySelectorAll(".card:not(.hidden) .sel").forEach(cb => {
+    cb.checked = true;
+    selected.add(cb.dataset.id);
+  });
+};
+
+document.getElementById("exportBtn").onclick = () => {
+  const lines = [
+    `# Forensic command export: ${OS[curOS].label}`,
+    `# Output folder: ${currentOut}`,
+    `# Run from an elevated prompt (Windows) or as root (Linux/macOS). Review before running.`,
+    ""
+  ];
+  let count = 0;
+  OS[curOS].sections.forEach(sec => sec.items.forEach(it => {
+    if (selected.has(it.id)) {
+      count++;
+      lines.push(`# ${it.t}`);
+      lines.push(`# ${it.d}`);
+      lines.push(cmdFor(it));
+      lines.push("");
+    }
+  }));
+  if (!count) { alert("Tick 'Include in export' on at least one command for this OS."); return; }
+  const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `forensic_${curOS}_commands.txt`;
+  a.click();
+};
+
+document.getElementById("outDir").value = currentOut;
+setOS("windows");
+</script>
+</body>
+</html>
